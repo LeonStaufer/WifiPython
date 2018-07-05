@@ -15,7 +15,7 @@ scale = 61
 
 plt.figure(dpi=600)
 
-image = plt.imread("D:\\plan1.png")
+image = plt.imread("plan1.png")
 plt.imshow(image, zorder=0, extent=[0, 3028, 0, 1251])
 
 

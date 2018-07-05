@@ -3,7 +3,7 @@ import math
 
 class RSSI(object):
     transmitPower = -35
-    LIGHT = 299_792_458
+    LIGHT = 299792458
 
     def __init__(self, RSSI, frequency):
         self.rssi = float(RSSI)

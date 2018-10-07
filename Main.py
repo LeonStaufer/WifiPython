@@ -1,8 +1,10 @@
+from pprint import pprint
+
 import matplotlib.pyplot as plt
 
 import Data
 from Point import Point
-from Trilaterate import trilaterate_mathematical, trilaterate_approx
+from Trilaterate import trilaterate_mathematical, trilaterate_approx, trilaterate_opti
 from WiFi import WiFi
 
 wifi = WiFi("raw/mathDoor.json")
@@ -26,15 +28,19 @@ plt.imshow(image, zorder=0, extent=[0, 3028, 0, 1251])
 
 points = []
 values = wifi.load(wifi.read(), False, "FIS")
+points2 = []
 
 for val in values:
     point = Data.addresses.get(val[0][:-3])
     if point.z is 4:
         points.append(point)
+        dict = [point.x, point.y, val[1].toDistance()]
+        points2.append(dict)
         radius = val[1].toDistance() * scale
         ax.add_artist(plt.Circle((point.x*scale, point.y*scale), radius, color="#0F0F0F1F", alpha=0.5))
 
-result = trilaterate_mathematical(points, values, scale)
+#result = trilaterate_mathematical(points, values, scale)
+"""
 print(trilaterate_approx([
     Point(21.8, 3.74, 4),
     Point(31.2, 3.74, 6),
@@ -58,8 +64,11 @@ print(trilaterate_approx([
     16.757730182816537,
     4.569936016072616
 ]))
+"""
 
 
-ax.add_artist(plt.Circle((result.item(0), result.item(0)), 20, color="red"))
+tripoint = trilaterate_opti(points2)
+
+ax.add_artist(plt.Circle((tripoint[0]*scale, tripoint[1]*scale), 20, color="red"))
 
 plt.show()

@@ -1,4 +1,7 @@
+import math
+
 import numpy
+import scipy.optimize
 
 from Point import Point
 
@@ -39,13 +42,11 @@ def trilaterate_mathematical(points, values, scale):
     x = (pow(DistA, 2) - pow(DistB, 2) + pow(d, 2)) / (2 * d)
     y = ((pow(DistA, 2) - pow(DistC, 2) + pow(i, 2) + pow(j, 2)) / (2 * j)) - ((i / j) * x)
 
-    print(x)
-    print(y)
-    print(pow(DistA, 2))
-    print(pow(DistA, 2) - pow(x, 2) - pow(y, 2))
+    # raise error if sqrt would be negative
+    if pow(DistA, 2) - pow(x, 2) - pow(y, 2) < 0:
+        raise ArithmeticError("When calculating Z, the sqrt would have to be negative")
 
-    # only one case shown here
-    z = numpy.sqrt(abs(pow(DistA, 2) - pow(x, 2) - pow(y, 2)))
+    z = numpy.sqrt(pow(DistA, 2) - pow(x, 2) - pow(y, 2))
 
     # triPt is an array with ECEF x,y,z of trilateration point
     triPt = P1 + x * ex + y * ey + z * ez
@@ -57,6 +58,8 @@ def trilaterate_mathematical(points, values, scale):
 """
     Trilateration solution from StackOverflow, ported from C++
 """
+
+
 def trilaterate_approx(points, dist):
     res = Point()
     alpha = ALPHA
@@ -70,3 +73,35 @@ def trilaterate_approx(points, dist):
         alpha = alpha * RATIO
         res = res + delta
     return res
+
+
+"""
+    function to be optimized    
+"""
+
+
+def distance(point1, point2):
+    return math.sqrt(
+        (point1[0] - point2[0]) ** 2 +
+        (point1[1] - point2[1]) ** 2)
+
+
+def distance_sum(x, points):
+    distsum = 0
+    for c in points:
+        dist = distance(x, c) - x[2] * c[2]
+        distsum += pow(dist, 2)
+    return distsum
+
+
+"""
+    Trilateration solution from https://github.com/henrik-muehe/trilateration/blob/master/trilat_optproblem.py
+"""
+
+
+def trilaterate_opti(points):
+    limit = 10
+    count = 0
+
+    result = scipy.optimize.fmin(distance_sum, [0, 0, 0], args=(points,), xtol=0.0001, ftol=0.0001, disp=False)
+    return result
